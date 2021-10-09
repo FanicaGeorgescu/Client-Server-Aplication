@@ -1,2 +1,138 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+
+
+
+                                       //Clasa Server
+ ********************************************************************************************************
+import java.net.*;
+import java.util.Scanner;
+import java.io.*;
+
+
+public class Server {
+    public static void main(String[] args) {
+        try {
+            ServerSocket serverSocket = new ServerSocket(1080);
+            do {
+                try {
+                    Socket socket = serverSocket.accept();
+                    System.out.println("Connected to client " + socket.getLocalAddress().getHostName());
+
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                         PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
+                        writer.println("Hello there!! Lets do some calculations :)");
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            String[] splitted = line.split(",");
+                            if (splitted.length == 2) {
+                                try {
+                                    Integer num1 = Integer.parseInt(splitted[0]);
+                                    Integer num2 = Integer.parseInt(splitted[1]);
+                                    writer.println("Sum= " + (num1 + num2));
+                                } catch (NumberFormatException numberFormatException) {
+                                    writer.println("Please send valid numbers.");
+                                }
+                            } else {
+                                writer.println("Please send two Integer separated numbers.");
+                            }
+                        }
+                    }
+                    socket.close();
+                } catch (IOException ioException) {
+                    System.out.println("Error listening to client.");
+                }
+            } while (true);
+        } catch (IOException ioException) {
+            System.out.println("Error opening server socket.");
+        }
+    }
+}
+
+
+                              Clasa Client
+*******************************************************************
+
+
+
+import java.net.*;
+import java.util.Scanner;
+import java.io.*;
+
+public class Client {
+
+    private static void showMenu() {
+        System.out.println("Please selection operation:");
+        System.out.println("1. Add two numbers");
+        System.out.println("2. Exit");
+
+    }
+
+    public static void main(String[] args) {
+        try {
+            Socket socket = new Socket("localhost", 1080);
+            Scanner scanner = new Scanner(System.in);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                 PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)) {
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println("Server: " + line);
+                    System.out.println("");
+
+                    showMenu();
+                    boolean processed = false;
+                    boolean exit = false;
+                    while (!processed && !exit) {
+                        String input = scanner.nextLine();
+                        try {
+                            Integer val = Integer.parseInt(input);
+                            switch (val) {
+                                case 1:
+                                    System.out.println("Number 1: ");
+                                    String input1 = scanner.nextLine();
+                                    System.out.println("Number 2: ");
+                                    String input2 = scanner.nextLine();
+                                    writer.println(input1 + "," + input2);
+                                    processed = true;
+                                    break;
+                                case 2:
+                                    exit = true;
+                                    break;
+                                default:
+                                    System.out.println("Please enter valid option.");
+                            }
+                        } catch (NumberFormatException numberFormatException) {
+                            System.out.println("Please enter a valid number");
+                        }
+                    }
+                    if (exit) {
+                        break;
+                    }
+                }
+            }
+            socket.close();
+        } catch (IOException ioException) {
+            System.out.println("Error connecting to server.");
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
